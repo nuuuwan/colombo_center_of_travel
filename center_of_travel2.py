@@ -1,7 +1,6 @@
 import os
 import os.path
 import sys
-sys.path.append('/Users/nuwan.senaratna/Dropbox/__CODING_PROJECTS_WORK/ColomboLabs/py/utils')
 
 import datetime
 import json
@@ -9,8 +8,6 @@ import math
 import random
 import requests
 import time
-
-from Cache import Cache
 
 random.seed(1)
 
@@ -64,39 +61,37 @@ def get_travel_info(pointA, pointB):
     key = 'get_travel_info_%s_%s_%s' % (KEY_PREFIX, start, end)
     key = key.replace(' ', '')
 
-    def fallback():
-        params = {
-            'origin': start,
-            'destination': end,
-            'key': API_KEY,
-            'departure_time': DEPARTURE_TIME,
-            'traffic_model': TRAFFIC_MODEL,
+    params = {
+        'origin': start,
+        'destination': end,
+        'key': API_KEY,
+        'departure_time': DEPARTURE_TIME,
+        'traffic_model': TRAFFIC_MODEL,
+    }
+
+    response = requests.get(GOOGLE_MAPS_API_URL, params=params)
+    data_json = response.content
+    data = json.loads(data_json)
+    if (data['status'] == 'ZERO_RESULTS'):
+        return None
+    leg = data['routes'][0]['legs'][0]
+
+    def loc_to_str(loc):
+        return '%4.4f,%4.4f' % (loc['lat'], loc['lng'])
+
+    return {
+        'startLoc': start,
+        'endLoc': end,
+
+        'distance': leg['distance']['value'],
+        'duration': leg['duration_in_traffic']['value'],
+
+        'startAddress': leg['start_address'] if 'start_address' in leg else loc_to_str(leg['start_location']) ,
+        'endAddress': leg['end_address'] if 'end_address' in leg else loc_to_str(leg['end_location']),
+
+        'startLocation': leg['start_location'],
+        'endLocation': leg['end_location'],
         }
-
-        response = requests.get(GOOGLE_MAPS_API_URL, params=params)
-        data_json = response.content
-        data = json.loads(data_json)
-        if (data['status'] == 'ZERO_RESULTS'):
-            return None
-        leg = data['routes'][0]['legs'][0]
-
-        def loc_to_str(loc):
-            return '%4.4f,%4.4f' % (loc['lat'], loc['lng'])
-
-        return {
-            'startLoc': start,
-            'endLoc': end,
-
-            'distance': leg['distance']['value'],
-            'duration': leg['duration_in_traffic']['value'],
-
-            'startAddress': leg['start_address'] if 'start_address' in leg else loc_to_str(leg['start_location']) ,
-            'endAddress': leg['end_address'] if 'end_address' in leg else loc_to_str(leg['end_location']),
-
-            'startLocation': leg['start_location'],
-            'endLocation': leg['end_location'],
-        }
-    return Cache.get(key, fallback)
 
 def get_random_point():
     return [
