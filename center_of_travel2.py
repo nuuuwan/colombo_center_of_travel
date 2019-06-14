@@ -5,11 +5,8 @@ import sys
 import datetime
 import json
 import math
-import random
 import requests
 import time
-
-random.seed(1)
 
 API_KEY = <API_KEY>
 JS_API_KEY = <JS_API_KEY>
@@ -92,12 +89,6 @@ def get_travel_info(pointA, pointB):
         'startLocation': leg['start_location'],
         'endLocation': leg['end_location'],
         }
-
-def get_random_point():
-    return [
-        random.random() * SPAN_LAT + MIN_LAT,
-        random.random() * SPAN_LON + MIN_LON,
-    ]
 
 def get_point(p_lat, p_lon):
     return [
